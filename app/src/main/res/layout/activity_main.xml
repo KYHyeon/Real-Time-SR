@@ -52,9 +52,19 @@
             android:layout_height="match_parent"
             android:layout_gravity="bottom|center_horizontal"
             android:background="@drawable/custombt"
+            android:onClick="onRecord"
             android:text="Start recognition"
             android:textColor="#FFFFFF" />
 
+        <Button
+            android:id="@+id/btnPlay"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@color/colorPrimary"
+            android:onClick="onPlay"
+            android:text="Play Record"
+            android:textColor="#FFFFFF" />
 
     </LinearLayout>
 
