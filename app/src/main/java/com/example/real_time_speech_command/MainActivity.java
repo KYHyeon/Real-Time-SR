@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.github.zagum.speechrecognitionview.RecognitionProgressView;
 import com.github.zagum.speechrecognitionview.adapters.RecognitionListenerAdapter;
 
+import org.apache.commons.io.IOUtils;
 import org.pytorch.IValue;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
@@ -109,8 +110,6 @@ public class MainActivity extends AppCompatActivity {
                 != PackageManager.PERMISSION_GRANTED) {
             requestPermission();
         }
-
-        //TODO 저장공간 권한 체크가 안되는거 같음.. 설정 - 애플리케이션 - 앱이름 - 권한 - 저장소 권한 수동 설정 필요
         if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -123,8 +122,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onRecord(View view) {
-        audioUtil.record();
+    public void onRecord(View view) throws InterruptedException {
+        audioUtil.record(AudioUtil.TYPE_RAW);
+        startRecognition();
     }
 
     public void onPlay(View view) {
@@ -139,70 +139,68 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-//    private void startRecognition() {
-//        Log.v(LOG_TAG, "Start recognition");
-//
-//        short[] inputBuffer = new short[RECORDING_LENGTH];
-//        double[] doubleInputBuffer = new double[RECORDING_LENGTH];
-//        long[] outputScores = new long[157];
-//        String[] outputScoresNames = new String[]{OUTPUT_SCORES_NAME};
-//
-//
-//        recordingBufferLock.lock();
-//        try {
-//            int maxLength = recordingBuffer.length;
-//            System.arraycopy(recordingBuffer, 0, inputBuffer, 0, maxLength);
-//        } finally {
-//            recordingBufferLock.unlock();
-//        }
-//
-//        // We need to feed in float values between -1.0 and 1.0, so divide the
-//        // signed 16-bit inputs.
-//        for (int i = 0; i < RECORDING_LENGTH; ++i) {
-//            doubleInputBuffer[i] = inputBuffer[i] / 32767.0;
-//        }
-//
-//        //MFCC java library.
-//        MFCC mfccConvert = new MFCC();
-//        float[] mfccInput = mfccConvert.process(doubleInputBuffer);
-//        Log.v(LOG_TAG, "MFCC Input======> " + Arrays.toString(mfccInput));
-//        Log.v(LOG_TAG, "MFCC Input======> " + mfccInput.length);
-//        long shape[] = {1, 1, 40, 32};
-//        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 40, 32});
-//        //Log.v(LOG_TAG, "Tensor Input======> " + inputTensor.toString());
-//        //Log.v(LOG_TAG, "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
-//        Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
-//        float[] scores = outputTensor.getDataAsFloatArray();
-//        float maxScore = -Float.MAX_VALUE;
-//        int maxScoreIdx = -1;
-//        for (int i = 0; i < scores.length; i++) {
-//            if (scores[i] > maxScore) {
-//                maxScore = scores[i];
-//                maxScoreIdx = i;
-//            }
-//        }
-//        String className = CLASSES[maxScoreIdx];
-//        Log.v(LOG_TAG, className);
-//        TextView tv = new TextView(this);
-//        tv.setText("인식결과: " + className);
-//        tv.setHeight(100);
-//        tv.setGravity(Gravity.CENTER);
-//        tv.setTextSize(20);
-//        tv.setTextColor(Color.RED);
-//        tv.setTypeface(null, Typeface.BOLD);
-//        LinearLayout ll = new LinearLayout(this.getApplicationContext());
-//        ll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//        ll.setBackgroundResource(R.drawable.customts);
-//        ll.setPadding(30, 0, 30, 0);
-//        ll.setGravity(Gravity.CENTER);
-//        ll.addView(tv);
-//        Toast t = Toast.makeText(this.getApplicationContext(), "", Toast.LENGTH_SHORT);
-//        t.setGravity(Gravity.CENTER, 0, 0);
-//        t.setView(ll);
-//        t.show();
-//        shouldContinue = true;
-//        //recordingOffset = 0;
-//    }
+    private void startRecognition() {
+        Log.v(LOG_TAG, "Start recognition");
+        byte[] inputBuffer = new byte[0];
+
+        try {
+            FileInputStream fis = new FileInputStream(AudioUtil.RECORD_FILE_PATH);
+            inputBuffer = IOUtils.toByteArray(fis);
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        double[] doubleInputBuffer = new double[inputBuffer.length];
+        long[] outputScores = new long[157];
+        String[] outputScoresNames = new String[]{OUTPUT_SCORES_NAME};
+
+        // We need to feed in float values between -1.0 and 1.0, so divide the
+        // signed 16-bit inputs.
+        for (int i = 0; i < inputBuffer.length; ++i) {
+            doubleInputBuffer[i] = inputBuffer[i] / 32767.0;
+        }
+
+        //MFCC java library.
+        MFCC mfccConvert = new MFCC();
+        float[] mfccInput = mfccConvert.process(doubleInputBuffer);
+        Log.v(LOG_TAG, "MFCC Input======> " + Arrays.toString(mfccInput));
+        Log.v(LOG_TAG, "MFCC Input======> " + mfccInput.length);
+        long shape[] = {1, 1, 40, 32};
+        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 40, 32});
+        //Log.v(LOG_TAG, "Tensor Input======> " + inputTensor.toString());
+        //Log.v(LOG_TAG, "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
+        Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
+        float[] scores = outputTensor.getDataAsFloatArray();
+        float maxScore = -Float.MAX_VALUE;
+        int maxScoreIdx = -1;
+        for (int i = 0; i < scores.length; i++) {
+            if (scores[i] > maxScore) {
+                maxScore = scores[i];
+                maxScoreIdx = i;
+            }
+        }
+        String className = CLASSES[maxScoreIdx];
+        Log.v(LOG_TAG, className);
+        TextView tv = new TextView(this);
+        tv.setText("인식결과: " + className);
+        tv.setHeight(100);
+        tv.setGravity(Gravity.CENTER);
+        tv.setTextSize(20);
+        tv.setTextColor(Color.RED);
+        tv.setTypeface(null, Typeface.BOLD);
+        LinearLayout ll = new LinearLayout(this.getApplicationContext());
+        ll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        ll.setBackgroundResource(R.drawable.customts);
+        ll.setPadding(30, 0, 30, 0);
+        ll.setGravity(Gravity.CENTER);
+        ll.addView(tv);
+        Toast t = Toast.makeText(this.getApplicationContext(), "", Toast.LENGTH_SHORT);
+        t.setGravity(Gravity.CENTER, 0, 0);
+        t.setView(ll);
+        t.show();
+        //recordingOffset = 0;
+    }
 
     private void showResults(Bundle results) {
         ArrayList<String> matches = results
@@ -216,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Requires RECORD_AUDIO permission", Toast.LENGTH_SHORT).show();
         } else {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQUEST_RECORD_AUDIO_PERMISSION_CODE);
         }
     }
