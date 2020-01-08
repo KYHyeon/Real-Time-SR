@@ -1,48 +1,33 @@
 package com.example.real_time_speech_command;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.speech.SpeechRecognizer;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.AudioTrack;
-import android.media.MediaRecorder;
-import android.os.Bundle;
-import android.os.Environment;
-import android.speech.SpeechRecognizer;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.github.zagum.speechrecognitionview.RecognitionProgressView;
 import com.github.zagum.speechrecognitionview.adapters.RecognitionListenerAdapter;
 
-import org.apache.commons.io.IOUtils;
-import org.pytorch.IValue;
 import org.pytorch.Module;
-import org.pytorch.Tensor;
 
-import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -57,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     //    private final ReentrantLock recordingBufferLock = new ReentrantLock();
     //Module module = Module.load("./dsadas.ff");
     Module module = null;
-    AudioUtil audioUtil = new AudioUtil(this);
+//    AudioUtil audioUtil = new AudioUtil(this);
     TextView result = null;
     private String CLASSES[] = {"silence", "갑자기", "마그네슘", "진통제",
             "타이레놀", "바이러스", "내시경", "비타민", "고혈압",
@@ -122,13 +107,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onRecord(View view) throws InterruptedException {
-        audioUtil.record(AudioUtil.TYPE_RAW);
-        startRecognition();
+    public void onRecord(View view) {
+//        audioUtil.startRecording();
+//        startRecognition();
+        startActivity(new Intent(this, WavRecorderActivity.class));
     }
 
     public void onPlay(View view) {
-        audioUtil.play();
+//        audioUtil.play();
+        startRecognition();
     }
 
     @Override
@@ -142,64 +129,70 @@ public class MainActivity extends AppCompatActivity {
     private void startRecognition() {
         Log.v(LOG_TAG, "Start recognition");
         byte[] inputBuffer = new byte[0];
-
+        byte[] header = new byte[44];
         try {
-            FileInputStream fis = new FileInputStream(AudioUtil.RECORD_FILE_PATH);
-            inputBuffer = IOUtils.toByteArray(fis);
-            fis.close();
+            RandomAccessFile fin = new RandomAccessFile("/sdcard/kailashdabhi.wav", "r");
+            fin.read(header);
+            while (true) {
+                System.out.println(fin.readFloat());
+            }
+//            inputBuffer = IOUtils.toByteArray(fis);
+//            fis.close();
+        } catch (EOFException eof) {
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        double[] doubleInputBuffer = new double[inputBuffer.length];
-        long[] outputScores = new long[157];
-        String[] outputScoresNames = new String[]{OUTPUT_SCORES_NAME};
-
-        // We need to feed in float values between -1.0 and 1.0, so divide the
-        // signed 16-bit inputs.
-        for (int i = 0; i < inputBuffer.length; ++i) {
-            doubleInputBuffer[i] = inputBuffer[i] / 32767.0;
-        }
-
-        //MFCC java library.
-        MFCC mfccConvert = new MFCC();
-        float[] mfccInput = mfccConvert.process(doubleInputBuffer);
-        Log.v(LOG_TAG, "MFCC Input======> " + Arrays.toString(mfccInput));
-        Log.v(LOG_TAG, "MFCC Input======> " + mfccInput.length);
-        long shape[] = {1, 1, 40, 32};
-        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 40, 32});
-        //Log.v(LOG_TAG, "Tensor Input======> " + inputTensor.toString());
-        //Log.v(LOG_TAG, "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
-        Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
-        float[] scores = outputTensor.getDataAsFloatArray();
-        float maxScore = -Float.MAX_VALUE;
-        int maxScoreIdx = -1;
-        for (int i = 0; i < scores.length; i++) {
-            if (scores[i] > maxScore) {
-                maxScore = scores[i];
-                maxScoreIdx = i;
-            }
-        }
-        String className = CLASSES[maxScoreIdx];
-        Log.v(LOG_TAG, className);
-        TextView tv = new TextView(this);
-        tv.setText("인식결과: " + className);
-        tv.setHeight(100);
-        tv.setGravity(Gravity.CENTER);
-        tv.setTextSize(20);
-        tv.setTextColor(Color.RED);
-        tv.setTypeface(null, Typeface.BOLD);
-        LinearLayout ll = new LinearLayout(this.getApplicationContext());
-        ll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        ll.setBackgroundResource(R.drawable.customts);
-        ll.setPadding(30, 0, 30, 0);
-        ll.setGravity(Gravity.CENTER);
-        ll.addView(tv);
-        Toast t = Toast.makeText(this.getApplicationContext(), "", Toast.LENGTH_SHORT);
-        t.setGravity(Gravity.CENTER, 0, 0);
-        t.setView(ll);
-        t.show();
-        //recordingOffset = 0;
+//
+//        double[] doubleInputBuffer = new double[inputBuffer.length];
+//        long[] outputScores = new long[157];
+//        String[] outputScoresNames = new String[]{OUTPUT_SCORES_NAME};
+//
+//        // We need to feed in float values between -1.0 and 1.0, so divide the
+//        // signed 16-bit inputs.
+//        for (int i = 0; i < inputBuffer.length; ++i) {
+//            doubleInputBuffer[i] = inputBuffer[i] / 32767.0;
+//        }
+//
+//        //MFCC java library.
+//        MFCC mfccConvert = new MFCC();
+//        float[] mfccInput = mfccConvert.process(doubleInputBuffer);
+//        Log.v(LOG_TAG, "MFCC Input======> " + Arrays.toString(mfccInput));
+//        Log.v(LOG_TAG, "MFCC Input======> " + mfccInput.length);
+//        long shape[] = {1, 1, 40, 32};
+//        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 40, 32});
+//        //Log.v(LOG_TAG, "Tensor Input======> " + inputTensor.toString());
+//        //Log.v(LOG_TAG, "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
+//        Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
+//        float[] scores = outputTensor.getDataAsFloatArray();
+//        float maxScore = -Float.MAX_VALUE;
+//        int maxScoreIdx = -1;
+//        for (int i = 0; i < scores.length; i++) {
+//            if (scores[i] > maxScore) {
+//                maxScore = scores[i];
+//                maxScoreIdx = i;
+//            }
+//        }
+//        String className = CLASSES[maxScoreIdx];
+//        Log.v(LOG_TAG, className);
+//        TextView tv = new TextView(this);
+//        tv.setText("인식결과: " + className);
+//        tv.setHeight(100);
+//        tv.setGravity(Gravity.CENTER);
+//        tv.setTextSize(20);
+//        tv.setTextColor(Color.RED);
+//        tv.setTypeface(null, Typeface.BOLD);
+//        LinearLayout ll = new LinearLayout(this.getApplicationContext());
+//        ll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+//        ll.setBackgroundResource(R.drawable.customts);
+//        ll.setPadding(30, 0, 30, 0);
+//        ll.setGravity(Gravity.CENTER);
+//        ll.addView(tv);
+//        Toast t = Toast.makeText(this.getApplicationContext(), "", Toast.LENGTH_SHORT);
+//        t.setGravity(Gravity.CENTER, 0, 0);
+//        t.setView(ll);
+//        t.show();
+//        //recordingOffset = 0;
     }
 
     private void showResults(Bundle results) {
