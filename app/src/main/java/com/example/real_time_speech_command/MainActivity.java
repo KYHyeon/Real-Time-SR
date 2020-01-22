@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             module = Module.load(assetFilePath(this, "model6.pth"));
-            Log.v(LOG_TAG, "success open model");
+            Log.d(LOG_TAG, "success open model");
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error reading assets", e);
             finish();
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRecord(View view) throws InterruptedException {
-        audioUtil.record(AudioUtil.TYPE_RAW);
+//        audioUtil.record(AudioUtil.TYPE_WAV);
         startRecognition();
     }
 
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startRecognition() {
-        Log.v(LOG_TAG, "Start recognition");
+        Log.d(LOG_TAG, "Start recognition");
         byte[] inputBuffer = new byte[0];
 
         try {
@@ -151,23 +151,23 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        double[] doubleInputBuffer = new double[inputBuffer.length];
+        double[] doubleInputBuffer = new double[inputBuffer.length - 44];
         long[] outputScores = new long[157];
         String[] outputScoresNames = new String[]{OUTPUT_SCORES_NAME};
 
         // We need to feed in float values between -1.0 and 1.0, so divide the
         // signed 16-bit inputs.
-        for (int i = 0; i < inputBuffer.length; ++i) {
-            doubleInputBuffer[i] = inputBuffer[i] / 32767.0;
+        for (int i = 0; i < doubleInputBuffer.length; i += 2) {
+            doubleInputBuffer[i/2] = inputBuffer[i + 44] / 32768.0;
+            doubleInputBuffer[i/2] += inputBuffer[i + 45] / 32768.0 * 256;
         }
-
         //MFCC java library.
         MFCC mfccConvert = new MFCC();
         float[] mfccInput = mfccConvert.process(doubleInputBuffer);
-        Log.v(LOG_TAG, "MFCC Input======> " + Arrays.toString(mfccInput));
-        Log.v(LOG_TAG, "MFCC Input======> " + mfccInput.length);
-        long shape[] = {1, 1, 40, 32};
-        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 40, 32});
+        Log.d(LOG_TAG, "MFCC Input======> " + Arrays.toString(mfccInput));
+        Log.d(LOG_TAG, "MFCC Input======> " + mfccInput.length);
+        long shape[] = {1, 1, 20, 32};
+        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 20, 32});
         //Log.v(LOG_TAG, "Tensor Input======> " + inputTensor.toString());
         //Log.v(LOG_TAG, "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
         Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         String className = CLASSES[maxScoreIdx];
-        Log.v(LOG_TAG, className);
+        Log.d(LOG_TAG, className);
         TextView tv = new TextView(this);
         tv.setText("인식결과: " + className);
         tv.setHeight(100);

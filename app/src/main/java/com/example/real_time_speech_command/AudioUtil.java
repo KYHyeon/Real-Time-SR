@@ -26,12 +26,11 @@ public class AudioUtil {
 
     private static final int SAMPLE_RATE = 16000;
     private static final int SAMPLE_DURATION_MS = 1500;
-    public static final int BUFFER_SIZE = AudioTrack.getMinBufferSize(SAMPLE_RATE, CHANNEL_COUNT, AUDIO_FORMAT);
     private static final int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;
-    private static final int CHANNEL_COUNT = AudioFormat.CHANNEL_IN_STEREO; //TODO CHANNEL 이 MONO 일 경우 재생이 안됨
+    private static final int CHANNEL_COUNT = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
-    public static final String RECORD_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/record.wav";
-    //    private static final int BUFFER_SIZE = SAMPLE_RATE * 2;
+    public static final String RECORD_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/c_Aq7D6FllpXg_33..wav";
+    private static final int BUFFER_SIZE = SAMPLE_RATE * 2;
     public static final int TYPE_RAW = 0;
 
     private AudioRecord mAudioRecord = null;
@@ -80,7 +79,7 @@ public class AudioUtil {
         mPlayThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                AudioTrack mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE, CHANNEL_COUNT, AUDIO_FORMAT, BUFFER_SIZE, AudioTrack.MODE_STREAM);
+                AudioTrack mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AUDIO_FORMAT, BUFFER_SIZE, AudioTrack.MODE_STREAM);
                 byte[] writeData = new byte[BUFFER_SIZE];
                 FileInputStream fis = null;
                 try {
@@ -174,7 +173,6 @@ public class AudioUtil {
 
                 int cnt = 0;
 
-                //TODO RECORDING_LENGTH 가 너무 짧은거 같음.
                 while (cnt <= RECORDING_LENGTH) {
                     int ret = mAudioRecord.read(readData, 0, BUFFER_SIZE);
                     Log.d(TAG, "read bytes is " + ret);
