@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class MFCC {
 
-    private final static int       n_mfcc       		= 20;
+    private final static int       n_mfcc       		= 40;
     private final static double    fMin                 = 0.0;
     private final static int       n_fft                = 2048;
     private final static int       hop_length           = 512;

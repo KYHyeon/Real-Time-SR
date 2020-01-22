@@ -166,8 +166,8 @@ public class MainActivity extends AppCompatActivity {
         float[] mfccInput = mfccConvert.process(doubleInputBuffer);
         Log.d(LOG_TAG, "MFCC Input======> " + Arrays.toString(mfccInput));
         Log.d(LOG_TAG, "MFCC Input======> " + mfccInput.length);
-        long shape[] = {1, 1, 20, 32};
-        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 20, 32});
+        long shape[] = {1, 1, 40, 32};
+        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 40, 32});
         //Log.v(LOG_TAG, "Tensor Input======> " + inputTensor.toString());
         //Log.v(LOG_TAG, "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
         Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
