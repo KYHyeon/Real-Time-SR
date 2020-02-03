@@ -11,7 +11,7 @@ public class MFCC {
     private final static double fMin = 0.0;
     private final static int n_fft = 2048;
     private final static int hop_length = 512;
-    private final static int n_mels = 40;
+    private final static int n_mels = 128;
 
     private final static double sampleRate = 16000.0;
     private final static double fMax = sampleRate / 2.0;
@@ -23,23 +23,28 @@ public class MFCC {
         Log.v("AudioInput", "Audio Input======> " + Arrays.toString(doubleInputBuffer));
         int length = (int) (1 * sampleRate);
         Log.v("fixedLength", "Audio Length======> " + Integer.toString(length));
-        double[] lodest_section = new double[length];
-        if (length < doubleInputBuffer.length) {
-            for (int i = 0; i < length; i++) {
-                lodest_section[i] = doubleInputBuffer[i];
-            }
-        } else if (length > doubleInputBuffer.length) {
-            for (int i = 0; i < length; i++) {
-                if (i < doubleInputBuffer.length) {
-                    lodest_section[i] = doubleInputBuffer[i];
-                } else {
-                    lodest_section[i] = 0;
-                }
-            }
-        }
-        Log.v("paddingAudioInput", "paddingAudio Input======> " + Arrays.toString(lodest_section));
-        final double[][] mfccResult = dctMfcc(lodest_section);
+        //TODO 길이가 다를 경우 대응, 이지만 일단은 생략
+        //double[] lodest_section = new double[length];
+//        if (length < doubleInputBuffer.length) {
+//            for (int i = 0; i < length; i++) {
+//                lodest_section[i] = doubleInputBuffer[i];
+//            }
+//        } else if (length > doubleInputBuffer.length) {
+//            for (int i = 0; i < length; i++) {
+//                if (i < doubleInputBuffer.length) {
+//                    lodest_section[i] = doubleInputBuffer[i];
+//                } else {
+//                    lodest_section[i] = 0;
+//                }
+//            }
+//        }
+//        Log.v("paddingAudioInput", "paddingAudio Input======> " + Arrays.toString(lodest_section));
+        final double[][] mfccResult = dctMfcc(doubleInputBuffer);
         return finalshape(mfccResult);
+        /*
+        TODO 1. pytorch 가 받는것이 4바이트 float이 맞는지?
+             2. flatten을 시키는 과정에서 오류가 있지 않을까
+         */
     }
 
     //MFCC into 1d
@@ -148,7 +153,7 @@ public class MFCC {
             for (int l = 0; l < n_fft; l++) {
                 fftFrame[l] = fftwin[l] * frame[l][k];
             }
-            double[] magSpec = magSpectrogram(fftFrame);
+            double[] magSpec = magSpectrogram(fftFrame);    //TODO 이부분이 파이썬에서는 분리되어 있는데 하나로 합쳐져 있는 것이 의심스럽다.
             for (int i = 0; i < 1 + n_fft / 2; i++) {
                 fftmagSpec[i][k] = magSpec[i];
             }

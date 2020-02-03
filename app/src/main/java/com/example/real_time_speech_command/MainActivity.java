@@ -151,16 +151,16 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        double[] doubleInputBuffer = new double[inputBuffer.length - 44];
+        double[] doubleInputBuffer = new double[(inputBuffer.length - 44) / 2];
         long[] outputScores = new long[157];
         String[] outputScoresNames = new String[]{OUTPUT_SCORES_NAME};
 
         // We need to feed in float values between -1.0 and 1.0, so divide the
         // signed 16-bit inputs.
-        for (int i = 0; i < doubleInputBuffer.length; i += 2) {
-            doubleInputBuffer[i/2] = inputBuffer[i + 44] / 32768.0;
-            doubleInputBuffer[i/2] += inputBuffer[i + 45] / 32768.0 * 256;
+        for (int i = 0; i < doubleInputBuffer.length; i++) {
+            doubleInputBuffer[i] = (inputBuffer[2 * i + 44] + inputBuffer[2 * i + 45] * 256) / 32768.0;
         }
+
         //MFCC java library.
         MFCC mfccConvert = new MFCC();
         float[] mfccInput = mfccConvert.process(doubleInputBuffer);
