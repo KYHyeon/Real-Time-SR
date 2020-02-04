@@ -39,6 +39,27 @@ public class MFCC {
 //            }
 //        }
 //        Log.v("paddingAudioInput", "paddingAudio Input======> " + Arrays.toString(lodest_section));
+
+        //fft test
+//        fft.process(new double[]{0, 1, 1, 2, 2, 0, 5, 5});
+//        for (int i = 0; i < 8; i++) {
+//            System.out.println(i + " : " + fft.real[i] + " : " + fft.imag[i]);
+//        }
+
+        //I/System.out: 0 : 16.0 : 0.0
+        //I/System.out: 1 : 0.8284271247461894 : 5.414213562373096
+        //    2 : -4.000000000000002 : 6.0
+        //    3 : -4.82842712474619 : -2.585786437626906
+        //    4 : 0.0 : 0.0
+        //    5 : -4.82842712474619 : 2.5857864376269046
+        //    6 : -3.9999999999999987 : -6.0
+        //I/System.out: 7 : 0.8284271247461905 : -5.414213562373094
+
+        //array([16.        +0.j        ,  0.82842712+5.41421356j,
+        //       -4.        +6.j        , -4.82842712-2.58578644j,
+        //        0.        +0.j        , -4.82842712+2.58578644j,
+        //       -4.        -6.j        ,  0.82842712-5.41421356j])
+
         final double[][] mfccResult = dctMfcc(doubleInputBuffer);
         return finalshape(mfccResult);
         /*
@@ -151,9 +172,9 @@ public class MFCC {
         double[] fftFrame = new double[n_fft];
         for (int k = 0; k < frame[0].length; k++) {
             for (int l = 0; l < n_fft; l++) {
-                fftFrame[l] = fftwin[l] * frame[l][k];
+                fftFrame[l] = fftwin[l] * frame[l][k];  //broadcasting
             }
-            double[] magSpec = magSpectrogram(fftFrame);    //TODO 이부분이 파이썬에서는 분리되어 있는데 하나로 합쳐져 있는 것이 의심스럽다.
+            double[] magSpec = magSpectrogram(fftFrame);
             for (int i = 0; i < 1 + n_fft / 2; i++) {
                 fftmagSpec[i][k] = magSpec[i];
             }
