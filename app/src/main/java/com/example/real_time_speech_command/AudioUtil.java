@@ -9,13 +9,16 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -202,5 +205,38 @@ public class AudioUtil {
         //TODO 이미 실행중인 쓰레드가 정상 종료되었는지 확인 필요
         mRecordThread.start();
         mRecordThread.join();
+    }
+
+    /**
+     * wav 파일을 읽는다.
+     *
+     * @return librosa 방법으로 읽은 wav파일 배열
+     */
+    static double[] readWav() {
+        byte[] inputBuffer = new byte[0];
+
+        try {
+            FileInputStream fis = new FileInputStream(AudioUtil.RECORD_FILE_PATH);
+            inputBuffer = IOUtils.toByteArray(fis);
+            String str = Arrays.toString(inputBuffer);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ff.txt"));
+            writer.write(str);
+            writer.close();
+
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        double[] doubleInputBuffer = new double[(inputBuffer.length - 44) / 2];
+
+        // We need to feed in float values between -1.0 and 1.0, so divide the
+        // signed 16-bit inputs.
+        for (int i = 0; i < doubleInputBuffer.length * 2; i += 2) {
+            doubleInputBuffer[i / 2] = inputBuffer[i + 44] / 32768.0;
+            doubleInputBuffer[i / 2] += inputBuffer[i + 45] / 32768.0 * 256;
+        }
+
+        return doubleInputBuffer;
     }
 }

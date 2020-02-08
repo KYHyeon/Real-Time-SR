@@ -1,19 +1,10 @@
 package com.example.real_time_speech_command;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.AudioTrack;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.speech.SpeechRecognizer;
@@ -24,25 +15,25 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.github.zagum.speechrecognitionview.RecognitionProgressView;
 import com.github.zagum.speechrecognitionview.adapters.RecognitionListenerAdapter;
 
-import org.apache.commons.io.IOUtils;
 import org.pytorch.IValue;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
 
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -141,25 +132,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void startRecognition() {
         Log.d(LOG_TAG, "Start recognition");
-        byte[] inputBuffer = new byte[0];
+        double[] doubleInputBuffer = AudioUtil.readWav();
 
-        try {
-            FileInputStream fis = new FileInputStream(AudioUtil.RECORD_FILE_PATH);
-            inputBuffer = IOUtils.toByteArray(fis);
-            fis.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        double[] doubleInputBuffer = new double[(inputBuffer.length - 44) / 2];
-        long[] outputScores = new long[157];
-        String[] outputScoresNames = new String[]{OUTPUT_SCORES_NAME};
-
-        // We need to feed in float values between -1.0 and 1.0, so divide the
-        // signed 16-bit inputs.
-        for (int i = 0; i < doubleInputBuffer.length; i++) {
-            doubleInputBuffer[i] = (inputBuffer[2 * i + 44] + inputBuffer[2 * i + 45] * 256) / 32768.0;
-        }
+//        try {
+//            FileWriter writer = new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/JavaOut.csv");
+//            for (double v : doubleInputBuffer) {
+//                writer.append(String.valueOf(v));
+//                writer.append("\n");
+//            }
+//            writer.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         //MFCC java library.
         MFCC mfccConvert = new MFCC();
