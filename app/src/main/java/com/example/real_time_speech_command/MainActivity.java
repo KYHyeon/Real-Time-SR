@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         recognitionProgressView.play();
 
         try {
-            module = Module.load(assetFilePath(this, "model6.pth"));
+            module = Module.load(assetFilePath(this, "resnet18_traced.pt"));
             Log.d(LOG_TAG, "success open model");
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error reading assets", e);
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRecord(View view) throws InterruptedException {
-//        audioUtil.record(AudioUtil.TYPE_WAV);
+        audioUtil.record(AudioUtil.TYPE_RAW);
         startRecognition();
     }
 

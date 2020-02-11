@@ -32,7 +32,7 @@ public class AudioUtil {
     private static final int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;
     private static final int CHANNEL_COUNT = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
-    public static final String RECORD_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/c_Aq7D6FllpXg_33..wav";
+    public static final String RECORD_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/c_4-O-ZaRkHG8_36..wav";
     private static final int BUFFER_SIZE = SAMPLE_RATE * 2;
     public static final int TYPE_RAW = 0;
 
@@ -47,35 +47,6 @@ public class AudioUtil {
 
     AudioUtil(Context context) {
         this.context = context;
-    }
-
-    private static void writeWavHeader(FileOutputStream out, short channels, int sampleRate, short bitDepth) throws IOException {
-        // WAV 포맷에 필요한 little endian 포맷으로 다중 바이트의 수를 raw byte로 변환한다.
-        byte[] littleBytes = ByteBuffer
-                .allocate(14)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .putShort(channels)
-                .putInt(sampleRate)
-                .putInt(sampleRate * channels * (bitDepth / 8))
-                .putShort((short) (channels * (bitDepth / 8)))
-                .putShort(bitDepth)
-                .array();
-        // 최고를 생성하지는 않겠지만, 적어도 쉽게만 가자.
-        out.write(new byte[]{
-                'R', 'I', 'F', 'F', // Chunk ID
-                0, 0, 0, 0, // Chunk Size (나중에 업데이트 될것)
-                'W', 'A', 'V', 'E', // Format
-                'f', 'm', 't', ' ', //Chunk ID
-                16, 0, 0, 0, // Chunk Size
-                1, 0, // AudioFormat
-                littleBytes[0], littleBytes[1], // Num of Channels
-                littleBytes[2], littleBytes[3], littleBytes[4], littleBytes[5], // SampleRate
-                littleBytes[6], littleBytes[7], littleBytes[8], littleBytes[9], // Byte Rate
-                littleBytes[10], littleBytes[11], // Block Align
-                littleBytes[12], littleBytes[13], // Bits Per Sample
-                'd', 'a', 't', 'a', // Chunk ID
-                0, 0, 0, 0, //Chunk Size (나중에 업데이트 될 것)
-        });
     }
 
     void play() {
@@ -122,27 +93,8 @@ public class AudioUtil {
         mPlayThread.start();
     }
 
-    private static void updateWavHeader(File wav) throws IOException {
-        byte[] sizes = ByteBuffer
-                .allocate(8)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                // 아마 이 두 개를 계산할 때 좀 더 좋은 방법이 있을거라 생각하지만..
-                .putInt((int) (wav.length() - 8)) // ChunkSize
-                .putInt((int) (wav.length() - 44)) // Chunk Size
-                .array();
-        try (RandomAccessFile accessWave = new RandomAccessFile(wav, "rw")) {
-            // 읽기-쓰기 모드로 인스턴스 생성
-            // ChunkSize
-            accessWave.seek(4); // 4바이트 지점으로 가서
-            accessWave.write(sizes, 0, 4); // 사이즈 채움
-            // Chunk Size
-            accessWave.seek(40); // 40바이트 지점으로 가서
-            accessWave.write(sizes, 4, 4); // 채움
-        }
-    }
-
     /**
-     * 녹음을 하여 RECORD_FILE_PATH 경로에 스테레오 방식으로 저장한다.
+     * 녹음을 하여 RECORD_FILE_PATH 경로에 모노 방식으로 저장한다.
      *
      * @param type 녹음 데이터를 저장할 방식
      *             AudioUtil.TYPE_RAW : 0
@@ -158,21 +110,21 @@ public class AudioUtil {
             @Override
             public void run() {
                 byte[] readData = new byte[BUFFER_SIZE];
-                FileOutputStream fos = null;
-                try {
-                    fos = new FileOutputStream(RECORD_FILE_PATH);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                assert fos != null;
-
-                if (type == TYPE_WAV) {
-                    try {
-                        writeWavHeader(fos, (short) 2 /* stereo */, SAMPLE_RATE, (short) 16);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+//                FileOutputStream fos = null;
+//                try {
+//                    fos = new FileOutputStream(RECORD_FILE_PATH);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//                assert fos != null;
+//
+//                if (type == TYPE_WAV) {
+//                    try {
+//                        writeWavHeader(fos, (short) 1 /* Mono */, SAMPLE_RATE, (short) 16);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
 
                 int cnt = 0;
 
@@ -181,24 +133,25 @@ public class AudioUtil {
                     Log.d(TAG, "read bytes is " + ret);
                     Log.d(TAG, "read data : " + Arrays.toString(readData));
                     cnt += ret;
-                    try {
-                        fos.write(readData, 0, BUFFER_SIZE);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        fos.write(readData, 0, BUFFER_SIZE);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
                 }
 
                 mAudioRecord.stop();
                 mAudioRecord.release();
 
-                try {
-                    fos.close();
-                    if (type == TYPE_WAV) {
-                        updateWavHeader(new File(RECORD_FILE_PATH));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                //TODO 이거 반환 bytesToDoubles(readData);
+//                try {
+//                    fos.close();
+//                    if (type == TYPE_WAV) {
+//                        updateWavHeader(new File(RECORD_FILE_PATH));
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
         });
 
@@ -228,6 +181,29 @@ public class AudioUtil {
             e.printStackTrace();
         }
 
+        return bytesToDoubles(inputBuffer);
+    }
+
+    private static void updateWavHeader(File wav) throws IOException {
+        byte[] sizes = ByteBuffer
+                .allocate(8)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                // 아마 이 두 개를 계산할 때 좀 더 좋은 방법이 있을거라 생각하지만..
+                .putInt((int) (wav.length() - 8)) // ChunkSize
+                .putInt((int) (wav.length() - 44)) // Chunk Size
+                .array();
+        try (RandomAccessFile accessWave = new RandomAccessFile(wav, "rw")) {
+            // 읽기-쓰기 모드로 인스턴스 생성
+            // ChunkSize
+            accessWave.seek(4); // 4바이트 지점으로 가서
+            accessWave.write(sizes, 0, 4); // 사이즈 채움
+            // Chunk Size
+            accessWave.seek(40); // 40바이트 지점으로 가서
+            accessWave.write(sizes, 4, 4); // 채움
+        }
+    }
+
+    private static double[] bytesToDoubles(byte[] inputBuffer) {
         double[] doubleInputBuffer = new double[(inputBuffer.length - 44) / 2];
 
         // We need to feed in float values between -1.0 and 1.0, so divide the
@@ -236,7 +212,35 @@ public class AudioUtil {
             doubleInputBuffer[i / 2] = inputBuffer[i + 44] / 32768.0;
             doubleInputBuffer[i / 2] += inputBuffer[i + 45] / 32768.0 * 256;
         }
-
         return doubleInputBuffer;
+    }
+
+    private static void writeWavHeader(FileOutputStream out, short channels, int sampleRate, short bitDepth) throws IOException {
+        // WAV 포맷에 필요한 little endian 포맷으로 다중 바이트의 수를 raw byte로 변환한다.
+        byte[] littleBytes = ByteBuffer
+                .allocate(14)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putShort(channels)
+                .putInt(sampleRate)
+                .putInt(sampleRate * channels * (bitDepth / 8))
+                .putShort((short) (channels * (bitDepth / 8)))
+                .putShort(bitDepth)
+                .array();
+        // 최고를 생성하지는 않겠지만, 적어도 쉽게만 가자.
+        out.write(new byte[]{
+                'R', 'I', 'F', 'F', // Chunk ID
+                0, 0, 0, 0, // Chunk Size (나중에 업데이트 될것)
+                'W', 'A', 'V', 'E', // Format
+                'f', 'm', 't', ' ', //Chunk ID
+                16, 0, 0, 0, // Chunk Size
+                1, 0, // AudioFormat
+                littleBytes[0], littleBytes[1], // Num of Channels
+                littleBytes[2], littleBytes[3], littleBytes[4], littleBytes[5], // SampleRate
+                littleBytes[6], littleBytes[7], littleBytes[8], littleBytes[9], // Byte Rate
+                littleBytes[10], littleBytes[11], // Block Align
+                littleBytes[12], littleBytes[13], // Bits Per Sample
+                'd', 'a', 't', 'a', // Chunk ID
+                0, 0, 0, 0, //Chunk Size (나중에 업데이트 될 것)
+        });
     }
 }
