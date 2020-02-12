@@ -34,16 +34,19 @@ public class AudioUtil {
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
     public static final String RECORD_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/c_4-O-ZaRkHG8_36..wav";
     private static final int BUFFER_SIZE = SAMPLE_RATE * 2;
+
     public static final int TYPE_RAW = 0;
+    public static final int TYPE_WAV = 1;
 
     private AudioRecord mAudioRecord = null;
     private Thread mRecordThread = null;
     private Thread mPlayThread = null;
 
     private Context context;    //UI를 활용할 때 사용
-    public static final int TYPE_WAV = 1;
     //    private static final int RECORDING_LENGTH = SAMPLE_RATE * SAMPLE_DURATION_MS / 1000;
-    private static final int RECORDING_LENGTH = SAMPLE_RATE * 5;
+    private static final int RECORDING_LENGTH = SAMPLE_RATE;
+
+    public static double[] input = new double[BUFFER_SIZE];
 
     AudioUtil(Context context) {
         this.context = context;
@@ -53,7 +56,13 @@ public class AudioUtil {
         mPlayThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                AudioTrack mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AUDIO_FORMAT, BUFFER_SIZE, AudioTrack.MODE_STREAM);
+                AudioTrack mAudioTrack = new AudioTrack(
+                        AudioManager.STREAM_MUSIC,
+                        SAMPLE_RATE,
+                        AudioFormat.CHANNEL_OUT_MONO,
+                        AUDIO_FORMAT,
+                        BUFFER_SIZE,
+                        AudioTrack.MODE_STREAM);
                 byte[] writeData = new byte[BUFFER_SIZE];
                 FileInputStream fis = null;
                 try {
@@ -100,16 +109,18 @@ public class AudioUtil {
      *             AudioUtil.TYPE_RAW : 0
      *             AudioUtil.TYPE_WAV : 1
      */
-    void record(final int type) throws InterruptedException {
+    void record(final int type) {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
-        mAudioRecord = new AudioRecord(AUDIO_SOURCE, SAMPLE_RATE, CHANNEL_COUNT, AUDIO_FORMAT, BUFFER_SIZE);
+        mAudioRecord = new AudioRecord(
+                AUDIO_SOURCE,
+                SAMPLE_RATE,
+                CHANNEL_COUNT,
+                AUDIO_FORMAT,
+                BUFFER_SIZE);
         mAudioRecord.startRecording();
 
-        mRecordThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                byte[] readData = new byte[BUFFER_SIZE];
+        byte[] readData = new byte[BUFFER_SIZE];
 //                FileOutputStream fos = null;
 //                try {
 //                    fos = new FileOutputStream(RECORD_FILE_PATH);
@@ -126,24 +137,24 @@ public class AudioUtil {
 //                    }
 //                }
 
-                int cnt = 0;
+        int cnt = 0;
 
-                while (cnt <= RECORDING_LENGTH) {
-                    int ret = mAudioRecord.read(readData, 0, BUFFER_SIZE);
-                    Log.d(TAG, "read bytes is " + ret);
-                    Log.d(TAG, "read data : " + Arrays.toString(readData));
-                    cnt += ret;
+        while (cnt <= RECORDING_LENGTH) {
+            int ret = mAudioRecord.read(readData, 0, BUFFER_SIZE);
+            Log.d(TAG, "read bytes is " + ret);
+            Log.d(TAG, "read data : " + Arrays.toString(readData));
+            cnt += ret;
 //                    try {
 //                        fos.write(readData, 0, BUFFER_SIZE);
 //                    } catch (IOException e) {
 //                        e.printStackTrace();
 //                    }
-                }
+        }
 
-                mAudioRecord.stop();
-                mAudioRecord.release();
+        mAudioRecord.stop();
+        mAudioRecord.release();
 
-                //TODO 이거 반환 bytesToDoubles(readData);
+        input = bytesToDoubles(readData);
 //                try {
 //                    fos.close();
 //                    if (type == TYPE_WAV) {
@@ -152,13 +163,8 @@ public class AudioUtil {
 //                } catch (IOException e) {
 //                    e.printStackTrace();
 //                }
-            }
-        });
-
-        //TODO 이미 실행중인 쓰레드가 정상 종료되었는지 확인 필요
-        mRecordThread.start();
-        mRecordThread.join();
     }
+
 
     /**
      * wav 파일을 읽는다.
@@ -167,16 +173,12 @@ public class AudioUtil {
      */
     static double[] readWav() {
         byte[] inputBuffer = new byte[0];
-
-        try {
-            FileInputStream fis = new FileInputStream(AudioUtil.RECORD_FILE_PATH);
+        try (FileInputStream fis = new FileInputStream(AudioUtil.RECORD_FILE_PATH)) {
             inputBuffer = IOUtils.toByteArray(fis);
-            String str = Arrays.toString(inputBuffer);
-            BufferedWriter writer = new BufferedWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ff.txt"));
-            writer.write(str);
-            writer.close();
-
-            fis.close();
+//            String str = Arrays.toString(inputBuffer);
+//            BufferedWriter writer = new BufferedWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ff.txt"));
+//            writer.write(str);
+//            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -204,13 +206,13 @@ public class AudioUtil {
     }
 
     private static double[] bytesToDoubles(byte[] inputBuffer) {
-        double[] doubleInputBuffer = new double[(inputBuffer.length - 44) / 2];
+        double[] doubleInputBuffer = new double[inputBuffer.length / 2];
 
         // We need to feed in float values between -1.0 and 1.0, so divide the
         // signed 16-bit inputs.
         for (int i = 0; i < doubleInputBuffer.length * 2; i += 2) {
-            doubleInputBuffer[i / 2] = inputBuffer[i + 44] / 32768.0;
-            doubleInputBuffer[i / 2] += inputBuffer[i + 45] / 32768.0 * 256;
+            doubleInputBuffer[i / 2] = inputBuffer[i] / 32768.0;
+            doubleInputBuffer[i / 2] += inputBuffer[i + 1] / 32768.0 * 256;
         }
         return doubleInputBuffer;
     }
