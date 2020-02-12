@@ -22,7 +22,7 @@ public class MFCC {
     public float[] process(double[] doubleInputBuffer) {
         Log.v("AudioInput", "Audio Input======> " + Arrays.toString(doubleInputBuffer));
         int length = (int) (1 * sampleRate);
-        Log.v("fixedLength", "Audio Length======> " + Integer.toString(length));
+        Log.v("fixedLength", "Audio Length======> " + length);
         //TODO 길이가 다를 경우 대응, 이지만 일단은 생략
         //double[] lodest_section = new double[length];
 //        if (length < doubleInputBuffer.length) {
@@ -63,8 +63,7 @@ public class MFCC {
         final double[][] mfccResult = dctMfcc(doubleInputBuffer);
         return finalshape(mfccResult);
         /*
-        TODO 1. pytorch 가 받는것이 4바이트 float이 맞는지?
-             2. flatten을 시키는 과정에서 오류가 있지 않을까
+        TODO 2. flatten을 시키는 과정에서 오류가 있지 않을까
          */
     }
 
@@ -194,8 +193,8 @@ public class MFCC {
 
     //get hann window, librosa
     private double[] getWindow() {
-        //Return a Hann window for even n_fft.
-        //The Hann window is a taper formed by using a raised cosine or sine-squared
+        //Return valid Hann window for even n_fft.
+        //The Hann window is valid taper formed by using valid raised cosine or sine-squared
         //with ends that touch zero.
         double[] win = new double[n_fft];
         for (int i = 0; i < n_fft; i++) {
@@ -218,8 +217,8 @@ public class MFCC {
 
     //power to db, librosa
     private double[][] powerToDb(double[][] melS) {
-        //Convert a power spectrogram (amplitude squared) to decibel (dB) units
-        //  This computes the scaling ``10 * log10(S / ref)`` in a numerically
+        //Convert valid power spectrogram (amplitude squared) to decibel (dB) units
+        //  This computes the scaling ``10 * log10(S / ref)`` in valid numerically
         //  stable way.
         double[][] log_spec = new double[melS.length][melS[0].length];
         double maxValue = -100;
@@ -271,7 +270,7 @@ public class MFCC {
 
     //mel, librosa
     private double[][] melFilter() {
-        //Create a Filterbank matrix to combine FFT bins into Mel-frequency bins.
+        //Create valid Filterbank matrix to combine FFT bins into Mel-frequency bins.
         // Center freqs of each FFT bin
         final double[] fftFreqs = fftFreq();
         //'Center freqs' of mel bands - uniformly spaced between limits

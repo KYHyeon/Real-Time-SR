@@ -11,13 +11,11 @@ import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
 
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -32,7 +30,7 @@ public class AudioUtil {
     private static final int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;
     private static final int CHANNEL_COUNT = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
-    public static final String RECORD_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/c_4-O-ZaRkHG8_36..wav";
+    public static final String RECORD_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/c_Aq7D6FllpXg_33..wav";
     private static final int BUFFER_SIZE = SAMPLE_RATE * 2;
 
     public static final int TYPE_RAW = 0;
@@ -167,13 +165,11 @@ public class AudioUtil {
 
 
     /**
-     * wav 파일을 읽는다.
-     *
-     * @return librosa 방법으로 읽은 wav파일 배열
+     * wav 파일을 읽어 input 배열에 저장한다.
      */
-    static double[] readWav() {
+    public static void readWav(String path) {
         byte[] inputBuffer = new byte[0];
-        try (FileInputStream fis = new FileInputStream(AudioUtil.RECORD_FILE_PATH)) {
+        try (FileInputStream fis = new FileInputStream(path)) {
             inputBuffer = IOUtils.toByteArray(fis);
 //            String str = Arrays.toString(inputBuffer);
 //            BufferedWriter writer = new BufferedWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ff.txt"));
@@ -183,7 +179,11 @@ public class AudioUtil {
             e.printStackTrace();
         }
 
-        return bytesToDoubles(inputBuffer);
+        input = bytesToDoubles(inputBuffer);
+    }
+
+    public static void readWav() {
+        readWav(RECORD_FILE_PATH);
     }
 
     private static void updateWavHeader(File wav) throws IOException {
@@ -206,13 +206,13 @@ public class AudioUtil {
     }
 
     private static double[] bytesToDoubles(byte[] inputBuffer) {
-        double[] doubleInputBuffer = new double[inputBuffer.length / 2];
+        double[] doubleInputBuffer = new double[(inputBuffer.length - 44) / 2];
 
         // We need to feed in float values between -1.0 and 1.0, so divide the
         // signed 16-bit inputs.
         for (int i = 0; i < doubleInputBuffer.length * 2; i += 2) {
-            doubleInputBuffer[i / 2] = inputBuffer[i] / 32768.0;
-            doubleInputBuffer[i / 2] += inputBuffer[i + 1] / 32768.0 * 256;
+            doubleInputBuffer[i / 2] = inputBuffer[i + 44] / 32768.0;
+            doubleInputBuffer[i / 2] += inputBuffer[i + 45] / 32768.0 * 256;
         }
         return doubleInputBuffer;
     }

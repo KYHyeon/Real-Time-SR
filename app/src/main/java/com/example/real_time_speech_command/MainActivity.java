@@ -112,8 +112,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRecord(View view) throws InterruptedException {
-        audioUtil.record(AudioUtil.TYPE_RAW);
-        startRecognition(AudioUtil.input);
+//        audioUtil.record(AudioUtil.TYPE_RAW);
+//        AudioUtil.readWav();
+//        startRecognition(AudioUtil.input);
+        Validation validation = new Validation(this);
     }
 
 //    public void onPlay(View view) {
@@ -128,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private void startRecognition(double[] input) {
+    public void startRecognition(double[] input) {
         Log.d(LOG_TAG, "Start recognition");
 //        double[] doubleInputBuffer = AudioUtil.readWav();
 
