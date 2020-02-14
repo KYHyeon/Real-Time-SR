@@ -2,6 +2,10 @@ package com.example.real_time_speech_command;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
+
+import com.example.real_time_speech_command.utility.AudioUtil;
+import com.example.real_time_speech_command.utility.MFCC;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -14,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 public class Validation {
     private Context context;
@@ -68,6 +73,7 @@ public class Validation {
             String[] path = file.getAbsolutePath().split("/");
             String ans = path[path.length - 2];
 
+            System.out.println(file.getAbsolutePath());
             AudioUtil.readWav(file.getAbsolutePath());
 
             MFCC mfccConvert = new MFCC();
@@ -75,8 +81,8 @@ public class Validation {
 
             long shape[] = {1, 1, 40, 32};
             Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 40, 32});
-            //Log.v(LOG_TAG, "Tensor Input======> " + inputTensor.toString());
-            //Log.v(LOG_TAG, "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
+            Log.v("VALID", "Tensor Input======> " + inputTensor.toString());
+            Log.v("VALID", "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
             Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
             float[] scores = outputTensor.getDataAsFloatArray();
             float maxScore = -Float.MAX_VALUE;

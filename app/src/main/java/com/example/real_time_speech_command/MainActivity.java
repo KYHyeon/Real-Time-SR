@@ -18,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.real_time_speech_command.utility.AudioUtil;
+import com.example.real_time_speech_command.utility.MFCC;
 import com.github.zagum.speechrecognitionview.RecognitionProgressView;
 import com.github.zagum.speechrecognitionview.adapters.RecognitionListenerAdapter;
 
@@ -150,12 +152,13 @@ public class MainActivity extends AppCompatActivity {
         float[] mfccInput = mfccConvert.process(input);
         Log.d(LOG_TAG, "MFCC Input======> " + Arrays.toString(mfccInput));
         Log.d(LOG_TAG, "MFCC Input======> " + mfccInput.length);
-        long shape[] = {1, 1, 40, 32};
-        Tensor inputTensor = Tensor.fromBlob(mfccInput, new long[]{1, 1, 40, 32});
+        long[] shape = {1, 1, 40, 32};
+        Tensor inputTensor = Tensor.fromBlob(mfccInput, shape);
         //Log.v(LOG_TAG, "Tensor Input======> " + inputTensor.toString());
         //Log.v(LOG_TAG, "Tensor Input======> " + Arrays.toString(inputTensor.getDataAsFloatArray()));
         Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
         float[] scores = outputTensor.getDataAsFloatArray();
+
         float maxScore = -Float.MAX_VALUE;
         int maxScoreIdx = -1;
         for (int i = 0; i < scores.length; i++) {

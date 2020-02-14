@@ -1,4 +1,4 @@
-package com.example.real_time_speech_command;
+package com.example.real_time_speech_command.utility;
 
 import android.content.Context;
 import android.media.AudioFormat;
@@ -46,7 +46,7 @@ public class AudioUtil {
 
     public static double[] input = new double[BUFFER_SIZE];
 
-    AudioUtil(Context context) {
+    public AudioUtil(Context context) {
         this.context = context;
     }
 

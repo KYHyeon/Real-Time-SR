@@ -1,4 +1,4 @@
-package com.example.real_time_speech_command;
+package com.example.real_time_speech_command.utility;
 
 public class FFT {
     double[] real;

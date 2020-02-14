@@ -1,4 +1,4 @@
-package com.example.real_time_speech_command;
+package com.example.real_time_speech_command.utility;
 
 
 import android.util.Log;
@@ -11,12 +11,12 @@ public class MFCC {
     private final static double fMin = 0.0;
     private final static int n_fft = 2048;
     private final static int hop_length = 512;
-    private final static int n_mels = 128;
+    private final static int n_mels = 40;
 
     private final static double sampleRate = 16000.0;
     private final static double fMax = sampleRate / 2.0;
 
-    FFT fft = new FFT();
+    private FFT fft = new FFT();
 
 
     public float[] process(double[] doubleInputBuffer) {
@@ -61,10 +61,22 @@ public class MFCC {
         //       -4.        -6.j        ,  0.82842712-5.41421356j])
 
         final double[][] mfccResult = dctMfcc(doubleInputBuffer);
-        return finalshape(mfccResult);
+        return flatten(mfccResult);
         /*
         TODO 2. flatten을 시키는 과정에서 오류가 있지 않을까
          */
+    }
+
+    //MFCC into 1d
+    private float[] flatten(double[][] mfccSpecTro) {
+        float[] finalMfcc = new float[mfccSpecTro[0].length * mfccSpecTro.length];
+        int k = 0;
+        for (double[] doubles : mfccSpecTro) {
+            for (double aDouble : doubles) {
+                finalMfcc[k++] = (float) aDouble;
+            }
+        }
+        return finalMfcc;
     }
 
     //MFCC into 1d
