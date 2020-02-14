@@ -1,27 +1,16 @@
 package com.example.real_time_speech_command.utility;
 
 import java.util.Arrays;
-import java.util.Random;
 
 public class Transforms {
+    /**
+     * Created by KYHyeon on 2020/2/14.
+     *
+     * Transforms on raw wav samples.
+     */
 
-    private Random random = new Random();
+    private RandomUtil random = new RandomUtil();
 
-    //"""Transforms on raw wav samples."""
-    //
-    //__author__ = 'Yuan Xu'
-    //
-    //import random
-    //import numpy as np
-    //import librosa
-    //
-    //import torch
-    //from torch.utils.data import Dataset
-    //
-    //def should_apply_transform(prob=0.5):
-    //    """Transforms are only randomly applied with the given probability."""
-    //    return random.random() < prob
-    //
     boolean should_apply_transform() {
         return should_apply_transform(0.5);
     }
@@ -95,15 +84,11 @@ public class Transforms {
     //        return data
     //
 
-    double RandomUniform(double low, double high) {
-        //Draw samples from a uniform distribution.
-        return random.nextDouble() * (high - low) + low;
-    }
 
     double[][] ChangeAmplitude(double[][] samples, double low, double high) {
         for (int i = 0; i < samples.length; i++) {
             for (int j = 0; j < samples[i].length; j++) {
-                samples[i][j] *= RandomUniform(low, high);
+                samples[i][j] *= random.uniform(low, high);
             }
         }
         return samples;
@@ -132,9 +117,10 @@ public class Transforms {
     }
 
     double[][] ChangeSpeedAndPitchAudio(double[][] samples, double sample_rate, double max_scale) {
-        double scale = RandomUniform(-max_scale,max_scale);
-        double speed_fac= 1.0 / (1+scale);
+        double scale = random.uniform(-max_scale, max_scale);
+        double speed_fac = 1.0 / (1 + scale);
 //        TODO samples
+
         return samples;
     }
     //class StretchAudio(object):
@@ -190,7 +176,22 @@ public class Transforms {
     //        data['samples'] = samples * (1 - percentage) + noise * percentage
     //        return data
     //
+    double[][] AddBackgroundNoise(double[][] samples, double[][][] bg_dataset_samples) {
+        return AddBackgroundNoise(samples, bg_dataset_samples, 0.45);
+    }
 
+    double[][] AddBackgroundNoise(double[][] samples, double[][][] bg_dataset_samples, double max_percentage) {
+        if (!should_apply_transform()) return samples;
+        double[][] noise = random.choice(bg_dataset_samples);
+        double percentage = random.uniform(0, max_percentage);
+        for (int i = 0; i < samples.length; i++) {
+            for (int j = 0; j < samples[i].length; j++) {
+                //TODO noise 의 크기와 samples 의 크기가 다르다면?
+                samples[i][j] = samples[i][j] * (1 - percentage) + noise[i][j] * percentage;
+            }
+        }
+        return samples;
+    }
     //class ToMelSpectrogram(object):
     //    """Creates the mel spectrogram from an audio. The result is a 32x32 matrix."""
     //

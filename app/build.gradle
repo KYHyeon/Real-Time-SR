@@ -34,5 +34,4 @@ dependencies {
     implementation 'org.pytorch:pytorch_android:1.3.0'
     implementation 'org.pytorch:pytorch_android_torchvision:1.3.0'
     implementation 'commons-io:commons-io:2.4'
-
 }
