@@ -50,7 +50,20 @@ public class ArrayUtil {
         return ret;
     }
 
-    public static double[] pad_constant(double[] array, int pad_width) {
-
+    /**
+     * Created by KYHyeon on 2020/2/15.
+     * np.pad(array, pad_width, mode='constant') implements for JAVA
+     *
+     * @param array    The array to pad.
+     * @param width_tl Number of values padded top and left to the edges
+     * @param width_br Number of values padded bottom and right  to the edges
+     * @return Padded array of rank equal to array with shape increased according to pad_width.
+     */
+    public static double[][] pad_constant(double[][] array, int width_tl, int width_br) {
+        double[][] ret = new double[array.length + width_tl + width_br][array[0].length + width_tl + width_br];
+        for (int i = 0; i < array.length; i++) {
+            System.arraycopy(array[i], 0, ret[width_tl + i], width_tl, array[i].length);
+        }
+        return ret;
     }
 }
