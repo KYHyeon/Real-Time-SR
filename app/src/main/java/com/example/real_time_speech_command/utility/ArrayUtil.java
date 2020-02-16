@@ -54,16 +54,14 @@ public class ArrayUtil {
      * Created by KYHyeon on 2020/2/15.
      * np.pad(array, pad_width, mode='constant') implements for JAVA
      *
-     * @param array    The array to pad.
-     * @param width_tl Number of values padded top and left to the edges
-     * @param width_br Number of values padded bottom and right  to the edges
+     * @param array     The array to pad.
+     * @param lpad_width Number of values padded to the left edge
+     * @param rpad_width Number of values padded to the right edge
      * @return Padded array of rank equal to array with shape increased according to pad_width.
      */
-    public static double[][] pad_constant(double[][] array, int width_tl, int width_br) {
-        double[][] ret = new double[array.length + width_tl + width_br][array[0].length + width_tl + width_br];
-        for (int i = 0; i < array.length; i++) {
-            System.arraycopy(array[i], 0, ret[width_tl + i], width_tl, array[i].length);
-        }
+    public static double[] pad_constant(double[] array, int lpad_width,int rpad_width) {
+        double[] ret = new double[array.length + lpad_width+rpad_width];
+        System.arraycopy(array, 0, ret, lpad_width, array.length);
         return ret;
     }
 }

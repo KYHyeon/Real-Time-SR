@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class Transforms {
     /**
      * Created by KYHyeon on 2020/2/14.
-     *
+     * <p>
      * Transforms on raw wav samples.
      */
 
@@ -41,48 +41,23 @@ public class Transforms {
 
     //class FixAudioLength(object):
     //    """Either pads or truncates an audio into a fixed length."""
-    //
-    //    def __init__(self, time=1):
-    //        self.time = time
-    //
-    //    def __call__(self, data):
-    //        samples = data['samples']
-    //        sample_rate = data['sample_rate']
-    //        length = int(self.time * sample_rate)
-    //        if length < len(samples):
-    //            data['samples'] = samples[:length]
-    //        elif length > len(samples):
-    //            data['samples'] = np.pad(samples, (0, length - len(samples)), "constant")
-    //        return data
-    //
-    double[][] FixAudioLength(double[][] samples, int sample_rate) {
+    double[] FixAudioLength(double[] samples, int sample_rate) {
         return FixAudioLength(samples, sample_rate, 1);
     }
 
-    double[][] FixAudioLength(double[][] samples, int sample_rate, int time) {
+    double[] FixAudioLength(double[] samples, int sample_rate, int time) {
         //"""Either pads or truncates an audio into a fixed length."""
         int length = time * sample_rate;
         if (length < samples.length) {
             samples = Arrays.copyOfRange(samples, 0, length);
         } else if (length > samples.length) {
-            //TODO  data['samples'] = np.pad(samples, (0, length - len(samples)), "constant")
+            samples = ArrayUtil.pad_constant(samples, 0, length - samples.length);
         }
         return samples;
     }
 
     //class ChangeAmplitude(object):
     //    """Changes amplitude of an audio randomly."""
-    //
-    //    def __init__(self, amplitude_range=(0.7, 1.1)):
-    //        self.amplitude_range = amplitude_range
-    //
-    //    def __call__(self, data):
-    //        if not should_apply_transform():
-    //            return data
-    //
-    //        data['samples'] = data['samples'] * random.uniform(*self.amplitude_range)
-    //        return data
-    //
 
 
     double[][] ChangeAmplitude(double[][] samples, double low, double high) {
@@ -96,31 +71,27 @@ public class Transforms {
 
     //class ChangeSpeedAndPitchAudio(object):
     //    """Change the speed of an audio. This transform also changes the pitch of the audio."""
-    //
-    //    def __init__(self, max_scale=0.2):
-    //        self.max_scale = max_scale
-    //
-    //    def __call__(self, data):
-    //        if not should_apply_transform():
-    //            return data
-    //
-    //        samples = data['samples']
-    //        sample_rate = data['sample_rate']
-    //        scale = random.uniform(-self.max_scale, self.max_scale)
-    //        speed_fac = 1.0  / (1 + scale)
-    //        data['samples'] = np.interp(np.arange(0, len(samples), speed_fac), np.arange(0,len(samples)), samples).astype(np.float32)
-    //        return data
-    //
 
-    double[][] ChangeSpeedAndPitchAudio(double[][] samples, double sample_rate) {
+    double[] ChangeSpeedAndPitchAudio(double[] samples, double sample_rate) {
         return ChangeSpeedAndPitchAudio(samples, sample_rate, 0.2);
     }
 
-    double[][] ChangeSpeedAndPitchAudio(double[][] samples, double sample_rate, double max_scale) {
+    double[] ChangeSpeedAndPitchAudio(double[] samples, double sample_rate, double max_scale) {
+        if (!should_apply_transform())
+        {
+            return samples;
+        }
         double scale = random.uniform(-max_scale, max_scale);
         double speed_fac = 1.0 / (1 + scale);
-//        TODO samples
-
+//        if not should_apply_transform():
+//            return data
+//
+//        samples = data['samples']
+//        sample_rate = data['sample_rate']
+//        scale = random.uniform(-self.max_scale, self.max_scale)
+//        speed_fac = 1.0  / (1 + scale)
+//        data['samples'] = np.interp(np.arange(0, len(samples), speed_fac), np.arange(0,len(samples)), samples).astype(np.float32)
+//        return data
         return samples;
     }
     //class StretchAudio(object):
@@ -140,55 +111,37 @@ public class Transforms {
 
     //class TimeshiftAudio(object):
     //    """Shifts an audio randomly."""
-    //
-    //    def __init__(self, max_shift_seconds=0.2):
-    //        self.max_shift_seconds = max_shift_seconds
-    //
-    //    def __call__(self, data):
-    //        if not should_apply_transform():
-    //            return data
-    //
-    //        samples = data['samples']
-    //        sample_rate = data['sample_rate']
-    //        max_shift = (sample_rate * self.max_shift_seconds)
-    //        shift = random.randint(-max_shift, max_shift)
-    //        a = -min(0, shift)
-    //        b = max(0, shift)
-    //        samples = np.pad(samples, (a, b), "constant")
-    //        data['samples'] = samples[:len(samples) - a] if a else samples[b:]
-    //        return data
-    //
+    double[] TimeshiftAudio(double[] samples, int sample_rate, double max_shift_seconds) {
+        int max_shift = (int) (sample_rate * max_shift_seconds);
+        int shift = random.nextInt(2 * max_shift) + max_shift;
+        int a = -Math.min(0, shift);
+        int b = Math.max(0, shift);
+        samples = ArrayUtil.pad_constant(samples, a, b);
+        if (a != 0) {
+            samples = Arrays.copyOfRange(samples, 0, samples.length - a); //samples[:len(samples) - a]
+        } else {
+            samples = Arrays.copyOfRange(samples, b, samples.length); //samples[b:]
+        }
+        return samples;
+    }
+
+    double[] TimeshiftAudio(double[] samples, int sample_rate) {
+        return TimeshiftAudio(samples, sample_rate, 0.2);
+    }
 
     //class AddBackgroundNoise(Dataset):
     //    """Adds a random background noise."""
-    //
-    //    def __init__(self, bg_dataset, max_percentage=0.45):
-    //        self.bg_dataset = bg_dataset
-    //        self.max_percentage = max_percentage
-    //
-    //    def __call__(self, data):
-    //        if not should_apply_transform():
-    //            return data
-    //
-    //        samples = data['samples']
-    //        noise = random.choice(self.bg_dataset)['samples']
-    //        percentage = random.uniform(0, self.max_percentage)
-    //        data['samples'] = samples * (1 - percentage) + noise * percentage
-    //        return data
-    //
-    double[][] AddBackgroundNoise(double[][] samples, double[][][] bg_dataset_samples) {
+    double[] AddBackgroundNoise(double[] samples, double[][] bg_dataset_samples) {
         return AddBackgroundNoise(samples, bg_dataset_samples, 0.45);
     }
 
-    double[][] AddBackgroundNoise(double[][] samples, double[][][] bg_dataset_samples, double max_percentage) {
+    double[] AddBackgroundNoise(double[] samples, double[][] bg_dataset_samples, double max_percentage) {
         if (!should_apply_transform()) return samples;
-        double[][] noise = random.choice(bg_dataset_samples);
+        double[] noise = random.choice(bg_dataset_samples);
         double percentage = random.uniform(0, max_percentage);
         for (int i = 0; i < samples.length; i++) {
-            for (int j = 0; j < samples[i].length; j++) {
                 //TODO noise 의 크기와 samples 의 크기가 다르다면?
-                samples[i][j] = samples[i][j] * (1 - percentage) + noise[i][j] * percentage;
-            }
+                samples[i] = samples[i] * (1 - percentage) + noise[i] * percentage;
         }
         return samples;
     }

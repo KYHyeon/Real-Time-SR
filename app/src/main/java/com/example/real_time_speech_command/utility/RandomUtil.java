@@ -9,7 +9,7 @@ public class RandomUtil extends Random {
         return nextDouble() * (high - low) + low;
     }
 
-    double[][] choice(double[][][] samples) {
+    double[] choice(double[][] samples) {
         int idx = nextInt(samples.length);
         return samples[idx];
     }
