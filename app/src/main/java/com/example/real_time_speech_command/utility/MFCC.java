@@ -126,7 +126,7 @@ public class MFCC {
     }
 
     //stft, librosa
-    private double[][] stftMagSpec(double[] y) {
+    public double[][] stftMagSpec(double[] y) {
         //Short-time Fourier transform (STFT)
         final double[] fftwin = getWindow();
         //pad y with reflect mode so it's centered. This reflect padding implementation is

@@ -77,8 +77,7 @@ public class Transforms {
     }
 
     double[] ChangeSpeedAndPitchAudio(double[] samples, double sample_rate, double max_scale) {
-        if (!should_apply_transform())
-        {
+        if (!should_apply_transform()) {
             return samples;
         }
         double scale = random.uniform(-max_scale, max_scale);
@@ -94,6 +93,7 @@ public class Transforms {
 //        return data
         return samples;
     }
+
     //class StretchAudio(object):
     //    """Stretches an audio randomly."""
     //
@@ -108,6 +108,19 @@ public class Transforms {
     //        data['samples'] = librosa.effects.time_stretch(data['samples'], 1+scale)
     //        return data
     //
+    double[] StretchAudio(double[] samples, double max_scale) {
+        if (!should_apply_transform()){
+            return samples;
+        }
+
+        double scale = random.uniform(-max_scale,max_scale);
+        samples = AudioUtil.time_stretch(samples,1+scale);
+        return samples;
+    }
+
+    double[] StretchAudio(double[] samples) {
+        return StretchAudio(samples, 0.2);
+    }
 
     //class TimeshiftAudio(object):
     //    """Shifts an audio randomly."""
@@ -140,8 +153,8 @@ public class Transforms {
         double[] noise = random.choice(bg_dataset_samples);
         double percentage = random.uniform(0, max_percentage);
         for (int i = 0; i < samples.length; i++) {
-                //TODO noise 의 크기와 samples 의 크기가 다르다면?
-                samples[i] = samples[i] * (1 - percentage) + noise[i] * percentage;
+            //TODO noise 의 크기와 samples 의 크기가 다르다면?
+            samples[i] = samples[i] * (1 - percentage) + noise[i] * percentage;
         }
         return samples;
     }

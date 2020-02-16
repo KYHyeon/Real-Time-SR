@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.InvalidParameterException;
 import java.util.Arrays;
 
 public class AudioUtil {
@@ -48,6 +49,39 @@ public class AudioUtil {
 
     public AudioUtil(Context context) {
         this.context = context;
+    }
+
+    /**
+     * Time-stretch an audio series by a fixed rate.
+     *
+     * @param y    audio time series
+     * @param rate Stretch factor. If rate > 1, then the signal is sped up. If rate < 1, then the signal is slowed down.
+     * @return audio time series stretched by the specified rate
+     */
+    public static double[] time_stretch(double[] y, double rate) {
+        double[] y_stretch = new double[(int) Math.round(y.length / rate)];
+        if (rate <= 0)
+        {
+            throw new InvalidParameterException("rate must be a positive number");
+        }
+
+        double[] stft =
+        //    # Construct the short-term Fourier transform (STFT)
+        //    stft = core.stft(y, **kwargs)
+        //
+        //    # Stretch by phase vocoding
+        //    stft_stretch = core.phase_vocoder(stft, rate)
+        //
+        //    # Predict the length of y_stretch
+        //    len_stretch = int(round(len(y)/rate))
+        //
+        //    # Invert the STFT
+        //    y_stretch = core.istft(
+        //        stft_stretch, dtype=y.dtype, length=len_stretch, **kwargs)
+        //
+        //    return y_stretch
+
+        return y_stretch;
     }
 
     void play() {
