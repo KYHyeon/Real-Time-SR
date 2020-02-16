@@ -1,13 +1,15 @@
 package com.example.real_time_speech_command.utility;
 
+import com.example.real_time_speech_command.data.Complex;
+
 public class FFT {
-    double[] real;
-    double[] imag;
+    private static double[] real;
+    private static double[] imag;
 
     /**
      * Performs Fast Fourier Transformation in place.
      */
-    public void process(double[] signal) {
+    public static Complex[] process(double[] signal) {
         final int numPoints = signal.length;
         // initialize real & imag array
         real = signal;
@@ -70,5 +72,11 @@ public class FFT {
                 UI = tempUR * SI + UI * SR;
             }
         }
+
+        Complex[] ret = new Complex[real.length];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = new Complex(real[i],imag[i]);
+        }
+        return ret;
     }
 }

@@ -3,6 +3,8 @@ package com.example.real_time_speech_command.utility;
 
 import android.util.Log;
 
+import com.example.real_time_speech_command.data.Complex;
+
 import java.util.Arrays;
 
 import static com.example.real_time_speech_command.utility.ArrayUtil.pad_reflect;
@@ -17,9 +19,6 @@ public class MFCC {
 
     private final static double sampleRate = 16000.0;
     private final static double fMax = sampleRate / 2.0;
-
-    private FFT fft = new FFT();
-
 
     public float[] process(double[] doubleInputBuffer) {
         Log.v("AudioInput", "Audio Input======> " + Arrays.toString(doubleInputBuffer));
@@ -126,7 +125,7 @@ public class MFCC {
     }
 
     //stft, librosa
-    public double[][] stftMagSpec(double[] y) {
+    public static double[][] stftMagSpec(double[] y) {
         //Short-time Fourier transform (STFT)
         final double[] fftwin = getWindow();
         //pad y with reflect mode so it's centered. This reflect padding implementation is
@@ -148,18 +147,18 @@ public class MFCC {
         return fftmagSpec;
     }
 
-    private double[] magSpectrogram(double[] frame) {
+    private static double[] magSpectrogram(double[] frame) {
         double[] magSpec = new double[frame.length];
-        fft.process(frame);
+        Complex[] fft = FFT.process(frame);
         for (int m = 0; m < frame.length; m++) {
-            magSpec[m] = fft.real[m] * fft.real[m] + fft.imag[m] * fft.imag[m];
+            magSpec[m] = fft[m].re() * fft[m].re() + fft[m].im() * fft[m].im();
         }
         return magSpec;
     }
 
 
     //get hann window, librosa
-    private double[] getWindow() {
+    private static double[] getWindow() {
         //Return valid Hann window for even n_fft.
         //The Hann window is valid taper formed by using valid raised cosine or sine-squared
         //with ends that touch zero.
@@ -171,7 +170,7 @@ public class MFCC {
     }
 
     //frame, librosa
-    private double[][] yFrame(double[] ypad) {
+    private static double[][] yFrame(double[] ypad) {
         final int n_frames = 1 + (ypad.length - n_fft) / hop_length;
         double[][] winFrames = new double[n_fft][n_frames];
         for (int i = 0; i < n_fft; i++) {

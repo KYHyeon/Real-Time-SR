@@ -9,6 +9,8 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
 
+import com.example.real_time_speech_command.data.Complex;
+
 import org.apache.commons.io.IOUtils;
 
 import java.io.DataInputStream;
@@ -60,12 +62,23 @@ public class AudioUtil {
      */
     public static double[] time_stretch(double[] y, double rate) {
         double[] y_stretch = new double[(int) Math.round(y.length / rate)];
-        if (rate <= 0)
-        {
+        if (rate <= 0) {
             throw new InvalidParameterException("rate must be a positive number");
         }
 
-        double[] stft =
+        //    # Construct the short-term Fourier transform (STFT)
+        double[][] stft = MFCC.stftMagSpec(y);
+
+        //    # Stretch by phase vocoding
+        Complex[][] stft_strtch = phase_vocoder(stft, rate);
+
+        //    # Predict the length of y_stretch
+        int len_stretch = (int) Math.round(y.length / rate);
+
+        //    # Invert the STFT
+        //    TODO y_stretch = core.istft(
+        //        stft_stretch, dtype=y.dtype, length=len_stretch, **kwargs)
+
         //    # Construct the short-term Fourier transform (STFT)
         //    stft = core.stft(y, **kwargs)
         //
@@ -82,6 +95,20 @@ public class AudioUtil {
         //    return y_stretch
 
         return y_stretch;
+    }
+
+    /**
+     * Given an STFT matrix D, speed up by a factor of rate
+     *
+     * @param D    STFT matrix
+     * @param rate Speed-up factor: rate > 1 is faster, rate < 1 is slower.
+     * @return time-stretched STFT
+     */
+    private static Complex[][] phase_vocoder(double[][] D, double rate) {
+        Complex[][] D_stretched = new Complex[D.length][(int) (D[0].length / rate)];
+//TODO
+
+        return D_stretched;
     }
 
     void play() {
