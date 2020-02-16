@@ -106,8 +106,51 @@ public class AudioUtil {
      */
     private static Complex[][] phase_vocoder(double[][] D, double rate) {
         Complex[][] D_stretched = new Complex[D.length][(int) (D[0].length / rate)];
-//TODO
 
+        int n_fft = 2 * D.length - 1;
+
+        int hop_length = n_fft / 4;
+
+        double[] time_steps = ArrayUtil.arange(0, D[0].length, rate);
+        //    # Create an empty output array
+        //    d_stretch = np.zeros((D.shape[0], len(time_steps)), D.dtype, order='F')
+        double[][] d_stretch =ArrayUtil.zeros(D.length,time_steps.length);
+
+        //    # Expected phase advance in each bin
+        //    phi_advance = np.linspace(0, np.pi * hop_length, D.shape[0])
+        //TODO 미구현.
+//        double[][] phi_advance = ArrayUtil.linspace(0,Math.PI * hop_length,D.length);
+
+        //    # Phase accumulator; initialize to the first sample
+        //    phase_acc = np.angle(D[:, 0])
+        //
+        //    # Pad 0 columns to simplify boundary logic
+        //    D = np.pad(D, [(0, 0), (0, 2)], mode='constant')
+        //
+        //    for (t, step) in enumerate(time_steps):
+        //
+        //        columns = D[:, int(step):int(step + 2)]
+        //
+        //        # Weighting for linear magnitude interpolation
+        //        alpha = np.mod(step, 1.0)
+        //        mag = ((1.0 - alpha) * np.abs(columns[:, 0])
+        //               + alpha * np.abs(columns[:, 1]))
+        //
+        //        # Store to output array
+        //        d_stretch[:, t] = mag * np.exp(1.j * phase_acc)
+        //
+        //        # Compute phase advance
+        //        dphase = (np.angle(columns[:, 1])
+        //                  - np.angle(columns[:, 0])
+        //                  - phi_advance)
+        //
+        //        # Wrap to -pi:pi range
+        //        dphase = dphase - 2.0 * np.pi * np.round(dphase / (2.0 * np.pi))
+        //
+        //        # Accumulate phase
+        //        phase_acc += phi_advance + dphase
+        //
+        //    return d_stretch
         return D_stretched;
     }
 

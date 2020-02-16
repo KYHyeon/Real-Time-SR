@@ -2,6 +2,8 @@ package com.example.real_time_speech_command.data;
 
 import java.util.Objects;
 
+//https://introcs.cs.princeton.edu/java/32class/Complex.java.html
+
 /******************************************************************************
  *  Compilation:  javac Complex.java
  *  Execution:    java Complex
@@ -44,7 +46,7 @@ public class Complex {
     public String toString() {
         if (im == 0) return re + "";
         if (re == 0) return im + "i";
-        if (im <  0) return re + " - " + (-im) + "i";
+        if (im < 0) return re + " - " + (-im) + "i";
         return re + " + " + im + "i";
     }
 
@@ -94,13 +96,18 @@ public class Complex {
 
     // return a new Complex object whose value is the reciprocal of this
     public Complex reciprocal() {
-        double scale = re*re + im*im;
+        double scale = re * re + im * im;
         return new Complex(re / scale, -im / scale);
     }
 
     // return the real or imaginary part
-    public double re() { return re; }
-    public double im() { return im; }
+    public double re() {
+        return re;
+    }
+
+    public double im() {
+        return im;
+    }
 
     // return a / b
     public Complex divides(Complex b) {
@@ -129,7 +136,6 @@ public class Complex {
     }
 
 
-
     // a static version of plus
     public static Complex plus(Complex a, Complex b) {
         double real = a.re + b.re;
@@ -151,24 +157,24 @@ public class Complex {
         return Objects.hash(re, im);
     }
 
-    // sample client for testing
-    public static void main(String[] args) {
-        Complex a = new Complex(5.0, 6.0);
-        Complex b = new Complex(-3.0, 4.0);
-
-        System.out.println("a            = " + a);
-        System.out.println("b            = " + b);
-        System.out.println("Re(a)        = " + a.re());
-        System.out.println("Im(a)        = " + a.im());
-        System.out.println("b + a        = " + b.plus(a));
-        System.out.println("a - b        = " + a.minus(b));
-        System.out.println("a * b        = " + a.times(b));
-        System.out.println("b * a        = " + b.times(a));
-        System.out.println("a / b        = " + a.divides(b));
-        System.out.println("(a / b) * b  = " + a.divides(b).times(b));
-        System.out.println("conj(a)      = " + a.conjugate());
-        System.out.println("|a|          = " + a.abs());
-        System.out.println("tan(a)       = " + a.tan());
-    }
+//    // sample client for testing
+//    public static void main(String[] args) {
+//        Complex a = new Complex(5.0, 6.0);
+//        Complex b = new Complex(-3.0, 4.0);
+//
+//        System.out.println("a            = " + a);
+//        System.out.println("b            = " + b);
+//        System.out.println("Re(a)        = " + a.re());
+//        System.out.println("Im(a)        = " + a.im());
+//        System.out.println("b + a        = " + b.plus(a));
+//        System.out.println("a - b        = " + a.minus(b));
+//        System.out.println("a * b        = " + a.times(b));
+//        System.out.println("b * a        = " + b.times(a));
+//        System.out.println("a / b        = " + a.divides(b));
+//        System.out.println("(a / b) * b  = " + a.divides(b).times(b));
+//        System.out.println("conj(a)      = " + a.conjugate());
+//        System.out.println("|a|          = " + a.abs());
+//        System.out.println("tan(a)       = " + a.tan());
+//    }
 
 }
