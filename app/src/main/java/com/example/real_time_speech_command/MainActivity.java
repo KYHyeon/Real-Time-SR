@@ -114,10 +114,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRecord(View view) throws InterruptedException {
-//        audioUtil.record(AudioUtil.TYPE_RAW);
+        audioUtil.record(AudioUtil.TYPE_RAW);
 //        AudioUtil.readWav();
-//        startRecognition(AudioUtil.input);
-        Validation validation = new Validation(this);
+        startRecognition(AudioUtil.input);
+//        Validation validation = new Validation(this);
     }
 
 //    public void onPlay(View view) {

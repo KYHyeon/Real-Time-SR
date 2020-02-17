@@ -211,7 +211,7 @@ public class AudioUtil {
      *             AudioUtil.TYPE_RAW : 0
      *             AudioUtil.TYPE_WAV : 1
      */
-    void record(final int type) {
+    public void record(final int type) {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
         mAudioRecord = new AudioRecord(
